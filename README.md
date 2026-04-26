@@ -17,6 +17,39 @@ WordPress.org plugin directory has a long, opinionated review process — compar
 
 ## Releases
 
+> **Note:** The release workflow file isn't in the repo yet because the bot PAT that did the initial commit lacks the `workflow` scope. Add the YAML below at `.github/workflows/release.yml` (one-time setup):
+>
+> ```yaml
+> name: Release plugin zip
+>
+> on:
+>   push:
+>     tags:
+>       - 'v*'
+>
+> permissions:
+>   contents: write
+>
+> jobs:
+>   build:
+>     runs-on: ubuntu-latest
+>     steps:
+>       - uses: actions/checkout@v4
+>       - name: Build plugin zip
+>         run: |
+>           mkdir -p build/autopilot-pixel
+>           cp autopilot-pixel.php readme.txt build/autopilot-pixel/
+>           cd build && zip -r "autopilot-pixel-${GITHUB_REF_NAME}.zip" autopilot-pixel
+>           cp "autopilot-pixel-${GITHUB_REF_NAME}.zip" "autopilot-pixel-latest.zip"
+>       - name: Create GitHub release
+>         uses: softprops/action-gh-release@v2
+>         with:
+>           files: |
+>             build/autopilot-pixel-${{ github.ref_name }}.zip
+>             build/autopilot-pixel-latest.zip
+>           generate_release_notes: true
+> ```
+
 Push a tag `v1.x.y`. GitHub Actions builds `autopilot-pixel-vX.Y.Z.zip` and `autopilot-pixel-latest.zip`, attaches them to the release, and they become reachable at:
 
 - `https://github.com/romankorim/autopilot-pixel-wp/releases/download/vX.Y.Z/autopilot-pixel-vX.Y.Z.zip`
